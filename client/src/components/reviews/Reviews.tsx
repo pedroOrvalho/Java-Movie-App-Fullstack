@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Container, Row, Col } from "react-bootstrap";
+
 import ReviewForm from "../reviewForm/ReviewForm";
 
 import { Movie } from "../../Types";
 
 type Review = {
-  id: {
-    timestamp: number;
-    date: number;
-  };
   body: string;
 };
 
@@ -20,10 +18,14 @@ export default function Reviews() {
   const [reviewText, setReviewText] = useState<string>("");
   let params = useParams();
   const movieId = params.movieId;
-
+  const userId = localStorage.getItem("userId")
+  const navigate= useNavigate();
+  
   const getMovieData = async (movieId: string | undefined) => {
     try {
-      const response = await axios(`http://localhost:8080/movies/${movieId}`);
+      const response = await axios(
+        `http://localhost:8080/movies/${movieId}`
+      );
       const movieData: Movie = response.data;
       setMovie(movieData);
       setReviews(movieData.reviewIds);
@@ -34,9 +36,14 @@ export default function Reviews() {
 
   const addReview = async (e: any) => {
     e.preventDefault();
+    if(!userId){
+      alert("Please log in to place a review.");
+      navigate("/login")
+    }
     try {
-      await axios.post("http://localhost:8080/movies", {
+      await axios.post("http://localhost:8080/reviews", {
         reviewBody: reviewText || "",
+        userId:userId,
         imdbId: movieId,
       });
       setReviewText("");
@@ -81,9 +88,9 @@ export default function Reviews() {
               </Row>
             </>
           }
-          {reviews?.map((review: Review) => {
+          {reviews?.map((review: Review, index: number) => {
             return (
-              <div key={review.id.timestamp}>
+              <div key={index}>
                 <>
                   <Row>
                     <Col>{review.body}</Col>

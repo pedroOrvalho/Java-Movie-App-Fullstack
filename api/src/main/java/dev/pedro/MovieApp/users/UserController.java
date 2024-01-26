@@ -3,7 +3,6 @@ package dev.pedro.MovieApp.users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,23 +10,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.Data;
 
-import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
   @Autowired
-  UserRepository userRepository;
-
-  @GetMapping
-  public List<User> getAllUsers() {
-    return userRepository.findAll();
-  }
+  UserService userService;
 
   @PostMapping
   public User createUser(@RequestBody User user) {
-    return userRepository.save(user);
+    return userService.createUser(user);
   }
 
   @PostMapping("/login")
@@ -35,13 +29,14 @@ public class UserController {
     String email = loginRequest.getEmail();
     String requestPassword = loginRequest.getPassword();
 
-    User user = userRepository.findByEmail(email);
+    Optional<User> userOptional = userService.findByEmail(email);
 
-    if (user != null) {
+    if (userOptional.isPresent()) {
+      User user = userOptional.get();
       String storedPassword = user.getPassword();
 
       if (storedPassword.equals(requestPassword)) {
-        // Passwords match
+
         return new ResponseEntity<User>(user, HttpStatus.OK);
       } else {
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -57,25 +52,3 @@ public class UserController {
     private String password;
   }
 }
-
-/*
-
-  @PostMapping("/login")
-  public User getUserByEmail(@RequestBody LoginRequest loginRequest) {
-    String email = loginRequest.getEmail();
-    String requestPassword = loginRequest.getPassword();
-
-    User user = userRepository.findByEmail(email);
-
-    if (user != null) {
-      String storedPassword = user.getPassword();
-
-      if (storedPassword.equals(requestPassword)) {
-
-      }
-    }
-
-    return user;
-  }
-
-*/ 
