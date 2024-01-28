@@ -3,6 +3,7 @@ package dev.pedro.MovieApp.users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,9 @@ public class UserController {
   @Autowired
   UserService userService;
 
+  @Autowired
+  PasswordEncoder passwordEncoder;
+
   @PostMapping
   public User createUser(@RequestBody User user) {
     return userService.createUser(user);
@@ -28,14 +32,13 @@ public class UserController {
   public ResponseEntity<User> loginByEmail(@RequestBody LoginRequest loginRequest) {
     String email = loginRequest.getEmail();
     String requestPassword = loginRequest.getPassword();
-
     Optional<User> userOptional = userService.findByEmail(email);
 
     if (userOptional.isPresent()) {
       User user = userOptional.get();
       String storedPassword = user.getPassword();
 
-      if (storedPassword.equals(requestPassword)) {
+      if (storedPassword != null && passwordEncoder.matches(requestPassword, storedPassword)) {
 
         return new ResponseEntity<User>(user, HttpStatus.OK);
       } else {
