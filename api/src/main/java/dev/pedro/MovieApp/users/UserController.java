@@ -21,7 +21,7 @@ public class UserController {
   UserService userService;
 
   @Autowired
-  private PasswordEncoder passwordEncoder;
+  PasswordEncoder passwordEncoder;
 
   @PostMapping
   public User createUser(@RequestBody User user) {
@@ -32,7 +32,6 @@ public class UserController {
   public ResponseEntity<User> loginByEmail(@RequestBody LoginRequest loginRequest) {
     String email = loginRequest.getEmail();
     String requestPassword = loginRequest.getPassword();
-
     Optional<User> userOptional = userService.findByEmail(email);
 
     if (userOptional.isPresent()) {
